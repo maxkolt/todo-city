@@ -13,8 +13,7 @@
               required
               variant="outlined"
               color="info"
-              type="email"
-            ></v-text-field>
+              type="email"/>
           </v-col>
 
           <v-col cols="12">
@@ -22,31 +21,28 @@
               @update:search="findAddress"
               :items="cities"
               v-model="city"
-              label="Город"/>
+              label="Введите город"/>
           </v-col>
 
           <v-col cols="12">
-            <v-text-field
+            <v-autocomplete
               disabled
               v-model="country"
-              label="Страна"
-            ></v-text-field>
+              label="Страна"/>
           </v-col>
 
           <v-col cols="12">
-            <v-text-field
+            <v-autocomplete
               disabled
               v-model="county"
-              label="Федеральный округ"
-            ></v-text-field>
+              label="Федеральный округ"/>
           </v-col>
 
           <v-col cols="12">
-            <v-text-field
+            <v-autocomplete
               disabled
               v-model="area"
-              label="Область"
-            ></v-text-field>
+              label="Область"/>
           </v-col>
         </v-card>
       </v-col>
@@ -80,6 +76,6 @@ export default defineComponent({
     ],
   })
 
-  
+
 })
 </script>
