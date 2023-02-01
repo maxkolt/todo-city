@@ -5,7 +5,7 @@
         <v-card>
           <h1 class="my-5 font-weight-thin">Форма ввода</h1>
           <v-col cols="12">
-            <v-autocomplete
+            <v-text-field
               v-model="email"
               :rules="emailRules"
               label="E-mail"
@@ -13,12 +13,13 @@
               variant="outlined"
               color="info"
               type="email"
-            ></v-autocomplete>
+            ></v-text-field>
           </v-col>
 
           <v-col cols="12">
             <v-autocomplete
               @update:search="findCity"
+              no-data-text="Начните ввод"
               :items="cities"
               v-model="city"
               density="comfortable"
@@ -27,27 +28,27 @@
           </v-col>
 
           <v-col cols="12">
-            <v-autocomplete
+            <v-text-field
               disabled
               v-model="country"
               label="Страна"
-            ></v-autocomplete>
+            ></v-text-field>
           </v-col>
 
           <v-col cols="12">
-            <v-autocomplete
+            <v-text-field
               disabled
               v-model="county"
               label="Федеральный округ"
-            ></v-autocomplete>
+            ></v-text-field>
           </v-col>
 
           <v-col cols="12">
-            <v-autocomplete
+            <v-text-field
               disabled
               v-model="area"
               label="Область"
-            ></v-autocomplete>
+            ></v-text-field>
           </v-col>
         </v-card>
       </v-col>
@@ -57,25 +58,19 @@
 
 <script lang="ts">
 import {defineComponent} from 'vue'
+import {Address} from "@/models/address";
+import {City} from "@/models/city";
 
-interface City {
-  title: string
-  regionFiasId: string
-}
-
-interface Address {
-  federalDistrict: string
-  regionWithType: string
-  country: string
-}
+const DATA_BASE_URL = "https://suggestions.dadata.ru/suggestions/api/4_1/rs";
+const TOKEN = "a5fa9500908363e432ad3ca6cd33c280927b32d5";
 
 export default defineComponent({
   data: () => ({
-    email: null,
-    city: null,
-    country: null,
-    county: null,
-    area: null,
+    email: '',
+    city: '',
+    country: '',
+    county: '',
+    area: '',
 
     cities: [] as City[],
 
@@ -99,8 +94,7 @@ export default defineComponent({
   },
   methods: {
     findAddress(regionFiasId: string) {
-      const url = "https://suggestions.dadata.ru/suggestions/api/4_1/rs/findById/address";
-      const token = "a5fa9500908363e432ad3ca6cd33c280927b32d5";
+      const url = DATA_BASE_URL + "/findById/address";
 
       const options: RequestInit = {
         method: "POST",
@@ -108,7 +102,7 @@ export default defineComponent({
         headers: {
           "Content-Type": "application/json",
           "Accept": "application/json",
-          "Authorization": "Token " + token,
+          "Authorization": "Token " + TOKEN,
         },
         body: JSON.stringify({query: regionFiasId})
       }
@@ -136,8 +130,11 @@ export default defineComponent({
 
 
     findCity(chars: string) {
-      const url = "https://suggestions.dadata.ru/suggestions/api/4_1/rs/suggest/address";
-      const token = "a5fa9500908363e432ad3ca6cd33c280927b32d5";
+      if (chars.length < 3) {
+        console.log(`Недостаточно букв: ${chars.length}`)
+        return
+      }
+      const url = DATA_BASE_URL + "/suggest/address";
 
       const options: RequestInit = {
         method: "POST",
@@ -145,7 +142,7 @@ export default defineComponent({
         headers: {
           "Content-Type": "application/json",
           "Accept": "application/json",
-          "Authorization": "Token " + token
+          "Authorization": "Token " + TOKEN
         },
         body: JSON.stringify({
           query: chars,
