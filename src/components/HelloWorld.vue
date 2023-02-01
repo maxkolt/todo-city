@@ -18,7 +18,7 @@
 
           <v-col cols="12">
             <v-autocomplete
-              @update:search="findAddress"
+              @update:search="findCity"
               :items="cities"
               v-model="city"
               label="Введите город"/>
@@ -53,16 +53,19 @@
 <script lang="ts">
 import {defineComponent} from 'vue'
 
+interface City {
+  title: string
+  regionFiasId: string
+}
+
 export default defineComponent({
   data: () => ({
-
     email: null,
     city: null,
     country: null,
     county: null,
     area: null,
-
-    cities: ['Moscow', 'Belarus', 'Ukraine'],
+    cities: [] as City [],
 
     emailRules: [
       (value: string) => {
@@ -74,8 +77,44 @@ export default defineComponent({
         return 'E-mail введён не корректно'
       },
     ],
-  })
+  }),
+  methods: {
+    findCity(chars: string) {
+      const url = "https://suggestions.dadata.ru/suggestions/api/4_1/rs/suggest/address";
+      const token = "a5fa9500908363e432ad3ca6cd33c280927b32d5";
 
+      const options: RequestInit = {
+        method: "POST",
+        mode: "cors",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "Authorization": "Token " + token
+        },
+        body: JSON.stringify({
+          query: chars,
+          from_bound: {value: "city"},
+          to_bound: {value: "city"}
+        })
+      }
 
+      fetch(url, options)
+        .then(response => response.json())
+        .then(result => {
+          const suggestions: any[] = result.suggestions
+          const findData: any[] = suggestions.map((s: any) => s.data)
+
+          const citiesFound = findData.map(d => {
+            const city: City = {
+              title: d.city,
+              regionFiasId: d.region_fias_id
+            }
+            return city
+          })
+          this.cities = citiesFound
+        })
+        .catch(error => console.log("error", error));
+    }
+  }
 })
 </script>
