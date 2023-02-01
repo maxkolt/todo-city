@@ -1,19 +1,19 @@
 <template>
   <v-container class="align-center text-center fill-height">
-
     <v-row justify="center">
       <v-col cols="12" lg="6" md="12" sm="12">
         <v-card>
           <h1 class="my-5 font-weight-thin">Форма ввода</h1>
           <v-col cols="12">
-            <v-text-field
+            <v-autocomplete
               v-model="email"
               :rules="emailRules"
               label="E-mail"
               required
               variant="outlined"
               color="info"
-              type="email"/>
+              type="email"
+            ></v-autocomplete>
           </v-col>
 
           <v-col cols="12">
@@ -21,28 +21,33 @@
               @update:search="findCity"
               :items="cities"
               v-model="city"
-              label="Введите город"/>
+              density="comfortable"
+              label="Город"
+            ></v-autocomplete>
           </v-col>
 
           <v-col cols="12">
             <v-autocomplete
               disabled
               v-model="country"
-              label="Страна"/>
+              label="Страна"
+            ></v-autocomplete>
           </v-col>
 
           <v-col cols="12">
             <v-autocomplete
               disabled
               v-model="county"
-              label="Федеральный округ"/>
+              label="Федеральный округ"
+            ></v-autocomplete>
           </v-col>
 
           <v-col cols="12">
             <v-autocomplete
               disabled
               v-model="area"
-              label="Область"/>
+              label="Область"
+            ></v-autocomplete>
           </v-col>
         </v-card>
       </v-col>
@@ -58,6 +63,12 @@ interface City {
   regionFiasId: string
 }
 
+interface Address {
+  federalDistrict: string
+  regionWithType: string
+  country: string
+}
+
 export default defineComponent({
   data: () => ({
     email: null,
@@ -65,7 +76,8 @@ export default defineComponent({
     country: null,
     county: null,
     area: null,
-    cities: [] as City [],
+
+    cities: [] as City[],
 
     emailRules: [
       (value: string) => {
@@ -77,8 +89,52 @@ export default defineComponent({
         return 'E-mail введён не корректно'
       },
     ],
+
   }),
+  watch: {
+    city(newCity: string, oldCity: string) {
+      const city: City = this.cities.find(c => c.title === newCity)!
+      this.findAddress(city.regionFiasId)
+    }
+  },
   methods: {
+    findAddress(regionFiasId: string) {
+      const url = "https://suggestions.dadata.ru/suggestions/api/4_1/rs/findById/address";
+      const token = "a5fa9500908363e432ad3ca6cd33c280927b32d5";
+
+      const options: RequestInit = {
+        method: "POST",
+        mode: "cors",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "Authorization": "Token " + token,
+        },
+        body: JSON.stringify({query: regionFiasId})
+      }
+
+      fetch(url, options)
+        .then(response => response.json())
+        .then(result => {
+          const resultAddress = result.suggestions[0].data
+          console.log(resultAddress)
+
+          const address: Address = {
+            federalDistrict: resultAddress.federal_district,
+            regionWithType: resultAddress.region_with_type,
+            country: resultAddress.country
+          }
+
+          this.county = address.federalDistrict
+          this.country = address.country
+          this.area = address.regionWithType
+          return address
+        })
+        .catch(error => console.log("error", error));
+
+    },
+
+
     findCity(chars: string) {
       const url = "https://suggestions.dadata.ru/suggestions/api/4_1/rs/suggest/address";
       const token = "a5fa9500908363e432ad3ca6cd33c280927b32d5";
@@ -117,4 +173,6 @@ export default defineComponent({
     }
   }
 })
+
+
 </script>
