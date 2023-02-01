@@ -1,10 +1,8 @@
 {
   "name": "todo-city",
-  "version": "0.0.0",
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc --noEmit && vite build",
-    "preview": "vite preview"
+    "build": "vue-tsc --noEmit && vite build"
   },
   "dependencies": {
     "@mdi/font": "7.0.96",
